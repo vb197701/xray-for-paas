@@ -29,7 +29,7 @@
 				},
 				"xhttpSettings": {
 					"path": "VMESS_WSPATH",
-					"mode": "packet"
+					"mode": "packet" // 或 "auto" / "stream"
 				}
 			},
 			"sniffing": {
@@ -61,7 +61,7 @@
 				},
 				"xhttpSettings": {
 					"path": "VLESS_WSPATH",
-					"mode": "packet"
+					"mode": "packet" // 或 "auto" / "stream"
 				}
 			},
 			"sniffing": {
@@ -92,7 +92,7 @@
 				},
 				"xhttpSettings": {
 					"path": "TROJAN_WSPATH",
-					"mode": "packet"
+					"mode": "packet" // 或 "auto" / "stream"
 				}
 			},
 			"sniffing": {
@@ -124,7 +124,7 @@
 				},
 				"xhttpSettings": {
 					"path": "SS_WSPATH",
-					"mode": "packet"
+					"mode": "packet" // 或 "auto" / "stream"
 				}
 			},
 			"sniffing": {
