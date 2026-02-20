@@ -1,3 +1,32 @@
+
+# 生成密钥对
+```
+xray x25519
+# 输出示例：
+# Private key: YOUR_PRIVATE_KEY
+# Public key:  YOUR_PUBLIC_KEY
+```
+
+# PaaS 环境变量替换
+```
+"privateKey": "${XRAY_PRIVATE_KEY}",
+"shortIds": ["${XRAY_SHORT_ID}"]
+"dest": "${REALITY_DEST:-www.example.com:443}"
+```
+
+# 客户端配置模板
+```
+vless://UUID@your-domain:443?security=reality&type=xhttp&path=%2FVLESS_WSPATH#xhttp-reality
+reality参数：pbk=YOUR_PUBLIC_KEY&sid=YOUR_SHORT_ID&sni=www.example.com&fp=chrome
+```
+# 测试验证
+```
+部署后运行：xray run -c config.json -test 确保无语法错误，然后检查日志确认 xhttp+reality 握手成功。
+```
+
+
+
+
 # xray for PaaS
 
 TIPS: 可点击仓库的“Use this template”在仓库的原基础上创建私库
@@ -45,9 +74,3 @@ ifeng 的 v2ray 项目：https://github.com/hiifeng
 
 * 本程序仅供学习了解, 非盈利目的，请于下载后 24 小时内删除, 不得用作任何商业用途, 文字、数据及图片均有所属版权, 如转载须注明来源。
 * 使用本程序必循遵守部署免责声明。使用本程序必循遵守部署服务器所在地、所在国家和用户所在国家的法律法规, 程序作者不对使用者任何不当行为负责.
-
-## 赞助
-
-爱发电：https://afdian.net/a/Misaka-blog
-
-![afdian-MisakaNo の 小破站](https://user-images.githubusercontent.com/122191366/211533469-351009fb-9ae8-4601-992a-abbf54665b68.jpg)
