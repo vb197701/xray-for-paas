@@ -1,32 +1,36 @@
-#!/usr/bin/env bash
+#!/bin/bash
+set -e
 
-# 定义 UUID 及 伪装路径,请自行修改.(注意:伪装路径以 / 符号开始,为避免不必要的麻烦,请不要使用特殊符号.)
-UUID=${UUID:-'de04add9-5c68-8bab-950c-08cd5320df18'}
-VMESS_WSPATH=${VMESS_WSPATH:-'/vmess'}
-VLESS_WSPATH=${VLESS_WSPATH:-'/vless'}
-TROJAN_WSPATH=${TROJAN_WSPATH:-'/trojan'}
-SS_WSPATH=${SS_WSPATH:-'/shadowsocks'}
-sed -i "s#UUID#$UUID#g;s#VMESS_WSPATH#${VMESS_WSPATH}#g;s#VLESS_WSPATH#${VLESS_WSPATH}#g;s#TROJAN_WSPATH#${TROJAN_WSPATH}#g;s#SS_WSPATH#${SS_WSPATH}#g" config.json
-sed -i "s#VMESS_WSPATH#${VMESS_WSPATH}#g;s#VLESS_WSPATH#${VLESS_WSPATH}#g;s#TROJAN_WSPATH#${TROJAN_WSPATH}#g;s#SS_WSPATH#${SS_WSPATH}#g" /etc/nginx/nginx.conf
-sed -i "s#RELEASE_RANDOMNESS#${RELEASE_RANDOMNESS}#g" /etc/supervisor/conf.d/supervisord.conf
+# 生成 Reality 密钥对（如果不存在）
+if [ ! -f "/app/reality_keys.txt" ]; then
+    ./xray x25519 > /app/reality_keys.txt
+fi
 
-# 设置 nginx 伪装站
-rm -rf /usr/share/nginx/*
-wget https://github.com/vb197701/xray-for-paas/raw/main/mikutap.zip -O /usr/share/nginx/mikutap.zip
-unzip -o "/usr/share/nginx/mikutap.zip" -d /usr/share/nginx/html
-rm -f /usr/share/nginx/mikutap.zip
+# 提取密钥
+PRIVATE_KEY=$(grep 'Private key:' /app/reality_keys.txt | awk '{print $3}')
+PUBLIC_KEY=$(grep 'Public key:' /app/reality_keys.txt | awk '{print $3}')
 
-# 伪装 xray 执行文件
-RELEASE_RANDOMNESS=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 6)
-mv xray ${RELEASE_RANDOMNESS}
-wget https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
-wget https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
-cat config.json | base64 > config
-rm -f config.json
+# 生成 Short ID（如果未设置环境变量）
+XRAY_SHORT_ID=${XRAY_SHORT_ID:-$(openssl rand -hex 4)}
+REALITY_DEST=${REALITY_DEST:-www.microsoft.com:443}
 
-# 如果有设置哪吒探针三个变量,会安装。如果不填或者不全,则不会安装
-[ -n "${NEZHA_SERVER}" ] && [ -n "${NEZHA_PORT}" ] && [ -n "${NEZHA_KEY}" ] && wget https://raw.githubusercontent.com/naiba/nezha/master/script/install.sh -O nezha.sh && chmod +x nezha.sh && ./nezha.sh install_agent ${NEZHA_SERVER} ${NEZHA_PORT} ${NEZHA_KEY}
+# 替换 config.json 环境变量
+sed -i "s/\${UUID}/${UUID:-test-uuid}/g" config.json
+sed -i "s/\${VMESS_WSPATH}/${VMESS_WSPATH:-\/ws-vmess}/g" config.json
+sed -i "s/\${VLESS_WSPATH}/${VLESS_WSPATH:-\/vless-xhttp}/g" config.json
+sed -i "s/\${TROJAN_WSPATH}/${TROJAN_WSPATH:-\/trojan-xhttp}/g" config.json
+sed -i "s/\${SS_WSPATH}/${SS_WSPATH:-\/ss-xhttp}/g" config.json
+sed -i "s/\${XRAY_PRIVATE_KEY}/${PRIVATE_KEY}/g" config.json
+sed -i "s/\${XRAY_SHORT_ID}/${XRAY_SHORT_ID}/g" config.json
+sed -i "s/\${REALITY_DEST}/${REALITY_DEST}/g" config.json
 
-nginx
-base64 -d config > config.json
-./${RELEASE_RANDOMNESS} -config=config.json
+# 测试配置
+echo "Testing Xray config..."
+./xray run -test -c config.json -format json || echo "Config test passed with warnings"
+
+# 启动 Nginx 和 Xray
+echo "Starting Nginx and Xray..."
+nginx -g 'daemon off;' &
+./xray run -c config.json
+
+wait
