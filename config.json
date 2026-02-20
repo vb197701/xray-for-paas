@@ -18,10 +18,23 @@
 				]
 			},
 			"streamSettings": {
-				"network": "ws",
-				"wsSettings": {
-					"path": "VMESS_WSPATH"
+				"network": "xhttp",
+				"security": "reality",
+				"realitySettings": {
+					"show": false,
+					"dest": "www.example.com:443",
+					"serverNames": ["www.example.com"],
+					"privateKey": "YOUR_PRIVATE_KEY",
+					"shortIds": ["YOUR_SHORT_ID"]
+				},
+				"xhttpSettings": {
+					"path": "VMESS_WSPATH",
+					"mode": "packet"
 				}
+			},
+			"sniffing": {
+				"enabled": true,
+				"destOverride": ["http", "tls"]
 			}
 		},
 		{
@@ -37,10 +50,23 @@
 				"decryption": "none"
 			},
 			"streamSettings": {
-				"network": "ws",
-				"wsSettings": {
-					"path": "VLESS_WSPATH"
+				"network": "xhttp",
+				"security": "reality",
+				"realitySettings": {
+					"show": false,
+					"dest": "www.example.com:443",
+					"serverNames": ["www.example.com"],
+					"privateKey": "YOUR_PRIVATE_KEY",
+					"shortIds": ["YOUR_SHORT_ID"]
+				},
+				"xhttpSettings": {
+					"path": "VLESS_WSPATH",
+					"mode": "packet"
 				}
+			},
+			"sniffing": {
+				"enabled": true,
+				"destOverride": ["http", "tls"]
 			}
 		},
 		{
@@ -52,14 +78,26 @@
 					{
 						"password": "UUID"
 					}
-				],
-				"decryption": "none"
+				]
 			},
 			"streamSettings": {
-				"network": "ws",
-				"wsSettings": {
-					"path": "TROJAN_WSPATH"
+				"network": "xhttp",
+				"security": "reality",
+				"realitySettings": {
+					"show": false,
+					"dest": "www.example.com:443",
+					"serverNames": ["www.example.com"],
+					"privateKey": "YOUR_PRIVATE_KEY",
+					"shortIds": ["YOUR_SHORT_ID"]
+				},
+				"xhttpSettings": {
+					"path": "TROJAN_WSPATH",
+					"mode": "packet"
 				}
+			},
+			"sniffing": {
+				"enabled": true,
+				"destOverride": ["http", "tls"]
 			}
 		},
 		{
@@ -72,25 +110,53 @@
 						"method": "chacha20-ietf-poly1305",
 						"password": "UUID"
 					}
-				],
-				"decryption": "none"
+				]
 			},
 			"streamSettings": {
-				"network": "ws",
-				"wsSettings": {
-					"path": "SS_WSPATH"
+				"network": "xhttp",
+				"security": "reality",
+				"realitySettings": {
+					"show": false,
+					"dest": "www.example.com:443",
+					"serverNames": ["www.example.com"],
+					"privateKey": "YOUR_PRIVATE_KEY",
+					"shortIds": ["YOUR_SHORT_ID"]
+				},
+				"xhttpSettings": {
+					"path": "SS_WSPATH",
+					"mode": "packet"
 				}
+			},
+			"sniffing": {
+				"enabled": true,
+				"destOverride": ["http", "tls"]
 			}
 		}
 	],
 	"outbounds": [
 		{
 			"protocol": "freedom",
-			"settings": {}
+			"settings": {},
+			"tag": "direct"
+		},
+		{
+			"protocol": "blackhole",
+			"settings": {},
+			"tag": "block"
 		}
 	],
+	"routing": {
+		"domainStrategy": "IPIfNonMatch",
+		"rules": [
+			{
+				"type": "field",
+				"ip": ["geoip:private"],
+				"outboundTag": "block"
+			}
+		]
+	},
 	"dns": {
-		"server": [
+		"servers": [
 			"8.8.8.8",
 			"8.8.4.4",
 			"localhost"
